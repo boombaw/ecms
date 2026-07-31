@@ -184,10 +184,10 @@ export function ParticipantTable() {
           {/* Mobile View: Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredRegistrations.map((reg) => (
-              <div key={reg.id} className="relative overflow-hidden rounded-xl shadow-lg group bg-[#E3242B] aspect-[1.6/1]">
+              <div key={reg.id} className="relative overflow-hidden rounded-xl shadow-lg group bg-[#E3242B] min-h-[180px]">
                 {/* Background Pattern */}
                 <div 
-                  className="absolute inset-0 bg-cover bg-center mix-blend-overlay opacity-50"
+                  className="absolute inset-0 bg-cover bg-center   opacity-50"
                   style={{ backgroundImage: "url('/assets/card_background.png')" }}
                 ></div>
                 

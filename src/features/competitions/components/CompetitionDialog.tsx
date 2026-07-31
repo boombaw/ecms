@@ -34,8 +34,8 @@ export function CompetitionDialog({ initialData, trigger, open, onOpenChange }: 
         <DialogTrigger render={trigger as React.ReactElement} />
       ) :   null}
 
-      <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden bg-surface rounded-2xl">
-        <DialogHeader className="p-6 pb-0">
+      <DialogContent className="sm:max-w-[425px] md:max-w-[500px] p-0 bg-surface rounded-2xl max-h-[90vh] flex flex-col overflow-hidden">
+        <DialogHeader className="p-6 pb-0 shrink-0">
           <DialogTitle className="text-headline-sm font-bold text-on-surface">
             {initialData ? 'Edit Lomba' : 'Tambah Lomba Baru'}
           </DialogTitle>
@@ -43,7 +43,7 @@ export function CompetitionDialog({ initialData, trigger, open, onOpenChange }: 
             Isi detail lomba di bawah ini sesuai dengan event yang dituju.
           </DialogDescription>
         </DialogHeader>
-        <div className="p-6 pt-4">
+        <div className="p-6 pt-4 overflow-y-auto">
           <CompetitionForm
             initialData={initialData}
             onSuccess={() => setIsOpen(false)}

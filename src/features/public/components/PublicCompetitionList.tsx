@@ -18,6 +18,8 @@ type CompetitionPublic = {
   category_id: string;
   status: string;
   schedule: string | null;
+  competition_type: string;
+  team_registration_mode: string | null;
   events: { name: string } | null;
   registrations: { id: string }[];
   max_participants: number | null;
@@ -30,8 +32,11 @@ export function PublicCompetitionList() {
   // Registration Dialog State
   const [selectedCompId, setSelectedCompId] = useState<string>('');
   const [selectedCompTitle, setSelectedCompTitle] = useState<string>('');
+  const [selectedCompType, setSelectedCompType] = useState<string>('');
+  const [selectedCompMode, setSelectedCompMode] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedType, setSelectedType] = useState<string>('Semua');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isParticipantsDialogOpen, setIsParticipantsDialogOpen] = useState(false);
 
@@ -41,7 +46,7 @@ export function PublicCompetitionList() {
         const { data, error } = await supabase
           .from('competitions')
           .select(`
-            id, title, category_id, status, schedule, max_participants,
+            id, title, category_id, status, schedule, max_participants, competition_type, team_registration_mode,
             events(name),
             registrations(id)
           `)
@@ -88,6 +93,14 @@ export function PublicCompetitionList() {
   const handleRegisterClick = (comp: CompetitionPublic) => {
     setSelectedCompId(comp.id);
     setSelectedCompTitle(comp.title + (comp.category_id ? ` (${comp.category_id})` : ''));
+    
+    // Normalize type in case old data has 'Individu'/'Team'
+    const normalizedType = comp.competition_type.toLowerCase() === 'team' ? 'team' : 
+                          comp.competition_type.toLowerCase() === 'individu' ? 'individual' : 
+                          comp.competition_type;
+    
+    setSelectedCompType(normalizedType);
+    setSelectedCompMode(comp.team_registration_mode);
     setIsDialogOpen(true);
   };
 
@@ -110,7 +123,10 @@ export function PublicCompetitionList() {
     const matchesSearch = c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (c.events?.name && c.events.name.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(c.category_id);
-    return matchesSearch && matchesCategory;
+    const matchesType = selectedType === 'Semua' || 
+      (selectedType === 'Individu' && c.competition_type.toLowerCase() === 'individu') ||
+      (selectedType === 'Team' && c.competition_type.toLowerCase() === 'team');
+    return matchesSearch && matchesCategory && matchesType;
   });
 
   return (
@@ -124,6 +140,21 @@ export function PublicCompetitionList() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-4 items-center">
+        <span className="text-sm font-medium text-slate-500 mr-1">Tipe:</span>
+        {['Semua', 'Individu', 'Team'].map((t) => (
+          <Button
+            key={t}
+            variant={selectedType === t ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedType(t)}
+            className={`rounded-full ${selectedType === t ? "text-white" : ""}`}
+          >
+            {t}
+          </Button>
+        ))}
       </div>
 
       {categories.length > 0 && (
@@ -177,12 +208,23 @@ export function PublicCompetitionList() {
                 <CardHeader className="pb-2">
                   <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-3">
                     <div>
-                      <CardTitle className="text-xl md:text-2xl font-bold text-slate-800">
-                        {comp.title} {comp.category_id ? <span className="text-primary">({comp.category_id})</span> : ''}
+                      <CardTitle className="text-xl md:text-2xl font-bold text-slate-800 flex items-center flex-wrap gap-2">
+                        <span>{comp.title}</span>
+                        {(comp.competition_type.toLowerCase() === 'individu') && <span className="text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-600 rounded-md border">👤 Individu</span>}
+                        {(comp.competition_type.toLowerCase() === 'team') && (
+                          <span className="text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-600 rounded-md border flex items-center gap-1">
+                            👥 Kelompok - {comp.team_registration_mode === 'existing' ? '🏷 Tim Sendiri' : '🎲 Tim Diacak Panitia'}
+                          </span>
+                        )}
                       </CardTitle>
                       <CardDescription className="text-base mt-1 text-slate-600 font-medium">
                         {comp.events?.name || 'Event Umum'}
                       </CardDescription>
+                      {comp.category_id && (
+                        <div className="mt-2">
+                          <span className="text-sm font-semibold px-2.5 py-1 bg-primary/10 text-primary rounded-md">{comp.category_id}</span>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <span className={`px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wide
@@ -202,7 +244,7 @@ export function PublicCompetitionList() {
                         <p className="text-sm text-slate-500 uppercase tracking-wider font-semibold mb-1">Jadwal Pelaksanaan</p>
                         <p className="font-bold text-slate-800 text-lg flex items-center">
                           <Calendar className="w-5 h-5 mr-2 text-slate-400" />
-                          {comp.schedule ? format(parseISO(comp.schedule), "EEEE, dd MMMM yyyy - HH:mm", { locale: id }) : 'Belum Ditentukan'}
+                          {comp.schedule ? format(parseISO(comp.schedule), "EEEE, dd MMMM yyyy", { locale: id }) : 'Belum Ditentukan'}
                         </p>
                       </div>
                       <div>
@@ -228,7 +270,8 @@ export function PublicCompetitionList() {
                         className="bg-primary text-on-primary rounded-xl h-12 px-6 shadow-md hover:shadow-lg active:scale-95 transition-all w-full sm:w-auto"
                       >
                         <PenTool className="w-5 h-5 mr-2" />
-                        Daftar Lomba
+                        {(comp.competition_type.toLowerCase() === 'individu') ? 'Daftar Individu' : 
+                         comp.team_registration_mode === 'existing' ? 'Daftar Tim' : 'Daftar Peserta'}
                       </Button>
                     )}
                   </div>
@@ -241,6 +284,8 @@ export function PublicCompetitionList() {
       <PublicRegistrationDialog
         competitionId={selectedCompId}
         competitionTitle={selectedCompTitle}
+        competitionType={selectedCompType}
+        teamRegistrationMode={selectedCompMode}
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onSuccess={() => {

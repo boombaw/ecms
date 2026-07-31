@@ -25,7 +25,8 @@ type CompetitionRow = {
   event_id: string;
   category_id: string;
   title: string;
-  type: 'Individu' | 'Kelompok';
+  competition_type: 'individual' | 'team';
+  team_registration_mode: 'existing' | 'random' | null;
   schedule: string | null;
   location: string | null;
   max_participants: number | null;
@@ -41,7 +42,7 @@ export function CompetitionTable() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [participantsDialogComp, setParticipantsDialogComp] = useState<{id: string, title: string, category_id?: string} | null>(null);
+  const [participantsDialogComp, setParticipantsDialogComp] = useState<{id: string, title: string, category_id?: string, competition_type?: string} | null>(null);
 
   const { data: competitions, isLoading, error } = useQuery({
     queryKey: ['competitions'],
@@ -186,7 +187,7 @@ export function CompetitionTable() {
               <Card 
                 key={comp.id} 
                 className="overflow-hidden border shadow-sm rounded-xl bg-white cursor-pointer hover:border-primary/50"
-                onClick={() => setParticipantsDialogComp({ id: comp.id, title: comp.title, category_id: comp.category_id })}
+                onClick={() => setParticipantsDialogComp({ id: comp.id, title: comp.title, category_id: comp.category_id, competition_type: comp.competition_type })}
               >
                 <CardContent className="p-4 space-y-3">
                   <div className="flex flex-col gap-2">
@@ -211,7 +212,14 @@ export function CompetitionTable() {
                   <div className="flex items-center gap-4 text-sm bg-slate-50 p-3 rounded-xl">
                     <div className="flex flex-col">
                       <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Tipe Lomba</span>
-                      <span className="font-bold text-slate-900 mt-1">{comp.type}</span>
+                      <span className="font-bold text-slate-900 mt-1">
+                        {comp.competition_type.toLowerCase() === 'individu' || comp.competition_type.toLowerCase() === 'individual' ? 'Individu' : 'Tim'}
+                        {(comp.competition_type.toLowerCase() === 'team' || comp.competition_type.toLowerCase() === 'kelompok') && (
+                          <Badge className="ml-2 text-[10px] px-1.5 py-0 bg-slate-100 text-slate-600 border-none" variant="outline">
+                            {comp.team_registration_mode === 'existing' ? 'Tim Sendiri' : 'Tim Acak'}
+                          </Badge>
+                        )}
+                      </span>
                     </div>
                     <div className="w-px h-8 bg-slate-200"></div>
                     <div className="flex flex-col">
@@ -283,7 +291,14 @@ export function CompetitionTable() {
                       {comp.title}
                       {comp.notes && <div className="text-xs text-muted-foreground font-normal mt-1">{comp.notes}</div>}
                     </TableCell>
-                    <TableCell className="text-base">{comp.type}</TableCell>
+                    <TableCell className="text-base">
+                      {comp.competition_type.toLowerCase() === 'individu' || comp.competition_type.toLowerCase() === 'individual' ? 'Individu' : 'Tim'}
+                      {(comp.competition_type.toLowerCase() === 'team' || comp.competition_type.toLowerCase() === 'kelompok') && (
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {comp.team_registration_mode === 'existing' ? 'Tim Sendiri' : 'Tim Acak'}
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="text-base font-medium text-primary">{comp.registrations?.length || 0} {comp.max_participants ? `/ ${comp.max_participants}` : ''} Terdaftar</TableCell>
                     <TableCell>
                       <Badge variant={comp.status === 'Registration' ? 'default' : 'secondary'} className="text-sm">
@@ -291,7 +306,7 @@ export function CompetitionTable() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right flex items-center justify-end gap-1">
-                      <Button onClick={() => setParticipantsDialogComp({ id: comp.id, title: comp.title, category_id: comp.category_id })} variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary" title="Lihat Peserta">
+                      <Button onClick={() => setParticipantsDialogComp({ id: comp.id, title: comp.title, category_id: comp.category_id, competition_type: comp.competition_type })} variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary" title="Lihat Peserta">
                         <Users className="h-5 w-5" />
                       </Button>
                       <Button onClick={() => handleEdit(comp)} variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary" title="Edit">
@@ -326,6 +341,7 @@ export function CompetitionTable() {
         competitionId={participantsDialogComp?.id || null}
         competitionTitle={participantsDialogComp?.title || ''}
         competitionCategory={participantsDialogComp?.category_id || undefined}
+        competitionType={participantsDialogComp?.competition_type || undefined}
         isOpen={!!participantsDialogComp}
         onClose={() => setParticipantsDialogComp(null)}
       />

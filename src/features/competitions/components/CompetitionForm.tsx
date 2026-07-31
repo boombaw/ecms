@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toTitleCase } from '@/lib/utils';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 interface CompetitionFormProps {
   initialData?: any;
@@ -47,6 +48,7 @@ export function CompetitionForm({ initialData, onSuccess, onCancel }: Competitio
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<CompetitionFormData>({
     resolver: zodResolver(competitionSchema),
@@ -57,7 +59,8 @@ export function CompetitionForm({ initialData, onSuccess, onCancel }: Competitio
       event_id: '',
       category_id: [CATEGORIES[0]],
       title: '',
-      type: 'Individu',
+      competition_type: 'individual',
+      team_registration_mode: null,
       schedule: '',
       location: '',
       max_participants: 50,
@@ -66,7 +69,25 @@ export function CompetitionForm({ initialData, onSuccess, onCancel }: Competitio
     },
   });
 
+  useEffect(() => {
+    if (initialData) {
+      const isTeam = initialData.competition_type?.toLowerCase() === 'team' || initialData.competition_type?.toLowerCase() === 'kelompok';
+      const catArray = typeof initialData.category_id === 'string' 
+        ? [initialData.category_id.trim()] 
+        : (initialData.category_id || [CATEGORIES[0]]);
+        
+      reset({
+        ...initialData,
+        competition_type: isTeam ? 'team' : 'individual',
+        team_registration_mode: initialData.team_registration_mode || null,
+        category_id: catArray,
+        schedule: initialData.schedule ? initialData.schedule.substring(0, 10) : ''
+      });
+    }
+  }, [initialData, reset]);
+
   const selectedCategories = watch('category_id') || [];
+  const selectedType = watch('competition_type');
 
   const handleCategoryChange = (category: string, checked: boolean) => {
     if (checked) {
@@ -171,17 +192,52 @@ export function CompetitionForm({ initialData, onSuccess, onCancel }: Competitio
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="type">Tipe Lomba</Label>
+        <Label htmlFor="competition_type">Tipe Lomba</Label>
         <select
-          id="type"
+          id="competition_type"
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-          {...register('type')}
+          {...register('competition_type')}
+          onChange={(e) => {
+            setValue('competition_type', e.target.value as 'individual' | 'team');
+            if (e.target.value === 'individual') {
+              setValue('team_registration_mode', null);
+            } else {
+              setValue('team_registration_mode', 'existing'); // Default for team
+            }
+          }}
         >
-          <option value="Individu">Individu</option>
-          <option value="Kelompok">Kelompok</option>
+          <option value="individual">Individu</option>
+          <option value="team">Tim/Kelompok</option>
         </select>
-        {errors.type && <p className="text-red-500 text-xs">{errors.type.message}</p>}
+        {errors.competition_type && <p className="text-red-500 text-xs">{errors.competition_type.message}</p>}
       </div>
+
+      {selectedType === 'team' && (
+        <div className="space-y-2 p-3 bg-slate-50 border rounded-md">
+          <Label>Mode Pendaftaran Tim</Label>
+          <div className="flex flex-col gap-2 mt-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                value="existing"
+                {...register('team_registration_mode')}
+                className="w-4 h-4 text-primary"
+              />
+              <span className="text-sm">Peserta mendaftar sebagai tim (Tim Sendiri)</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                value="random"
+                {...register('team_registration_mode')}
+                className="w-4 h-4 text-primary"
+              />
+              <span className="text-sm">Peserta mendaftar individu, tim diacak panitia (Tim Acak)</span>
+            </label>
+          </div>
+          {errors.team_registration_mode && <p className="text-red-500 text-xs">{errors.team_registration_mode.message}</p>}
+        </div>
+      )}
 
       <div className="space-y-2">
           <Label htmlFor="max_participants">Kuota Peserta</Label>
@@ -197,7 +253,7 @@ export function CompetitionForm({ initialData, onSuccess, onCancel }: Competitio
         <Label htmlFor="schedule">Jadwal Pelaksanaan</Label>
         <input
           id="schedule"
-          type="datetime-local"
+          type="date"
           onClick={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
