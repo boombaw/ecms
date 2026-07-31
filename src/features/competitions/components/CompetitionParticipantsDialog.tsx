@@ -267,8 +267,8 @@ export function CompetitionParticipantsDialog({
                     </div>
                     {teams.map((team) => (
                       <div key={team.id} className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                        <button 
-                          className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 transition-colors focus:outline-none"
+                        <div 
+                          className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 transition-colors focus:outline-none cursor-pointer"
                           onClick={() => toggleTeam(team.id)}
                         >
                           <div className="flex items-center gap-3">
@@ -290,7 +290,7 @@ export function CompetitionParticipantsDialog({
                             </Badge>
                           </div>
                           {expandedTeamId === team.id ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
-                        </button>
+                        </div>
                         
                         {expandedTeamId === team.id && (
                           <div className="p-4 bg-slate-50 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-3">

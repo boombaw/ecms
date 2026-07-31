@@ -7,7 +7,7 @@ export default function TeamsPage() {
     <>
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold md:text-2xl">Manajemen Tim</h1>
-        <Button className="gap-2">
+        <Button className="gap-2 bg-primary hover:bg-primary/90 text-white">
           <Plus className="h-4 w-4" />
           Tambah Tim
         </Button>

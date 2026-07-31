@@ -341,7 +341,7 @@ export function PublicRegistrationDialog({
                                 {...register(`members.${index}.full_name` as const)}
                                 className="h-9"
                               />
-                              {errors.members?.[index]?.full_name && <p className="text-red-500 text-xs">{errors.members[index]?.full_name?.message}</p>}
+                              {(errors.members as any)?.[index]?.full_name && <p className="text-red-500 text-xs">{(errors.members as any)[index]?.full_name?.message}</p>}
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs text-slate-500">Blok Rumah / RT <span className="text-red-500">*</span></Label>
@@ -350,7 +350,7 @@ export function PublicRegistrationDialog({
                                 {...register(`members.${index}.address` as const)}
                                 className="h-9"
                               />
-                              {errors.members?.[index]?.address && <p className="text-red-500 text-xs">{errors.members[index]?.address?.message}</p>}
+                              {(errors.members as any)?.[index]?.address && <p className="text-red-500 text-xs">{(errors.members as any)[index]?.address?.message}</p>}
                             </div>
                           </div>
                           {fields.length > 1 && (

@@ -93,7 +93,7 @@ export function RegistrationTable() {
               </TableCell>
               <TableCell>{format(new Date(reg.created_at), 'dd MMM yyyy')}</TableCell>
               <TableCell>
-                <Badge variant="default">Terdaftar</Badge>
+                <Badge variant="default" className='text-white'>Terdaftar</Badge>
               </TableCell>
               <TableCell className="text-right">
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive/90">

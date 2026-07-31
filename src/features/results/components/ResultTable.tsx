@@ -168,7 +168,7 @@ export function ResultTable() {
                   </TableCell>
                   <TableCell className="font-bold text-base text-slate-800">{comp.title}</TableCell>
                   <TableCell>
-                    <Badge variant={comp.status === 'Finished' ? 'default' : 'secondary'} className="text-sm">
+                    <Badge variant={comp.status === 'Finished' ? 'default' : 'secondary'} className="text-sm text-white">
                       {comp.status || 'Draft'}
                     </Badge>
                   </TableCell>

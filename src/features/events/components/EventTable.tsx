@@ -207,7 +207,7 @@ export function EventTable() {
                       <TableCell className="text-base">{event.end_date || '-'}</TableCell>
                       <TableCell className="text-base">{event.location || '-'}</TableCell>
                       <TableCell>
-                        <Badge variant={event.status === 'Upcoming' ? 'default' : 'secondary'} className="text-sm">
+                        <Badge variant={event.status === 'Upcoming' ? 'default' : 'secondary'} className="text-sm text-white">
                         {event.status || 'Draft'}
                       </Badge>
                     </TableCell>
